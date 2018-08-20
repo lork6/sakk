@@ -1,9 +1,10 @@
+#!/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 import pygame
 import os
 import sys
 
 
-kicka_meret = 100
+kocka_meret = 100
 per = r"\ "
 mappa = os.path.dirname(__file__) + r"{}kepek{}".format(per[0], per[0])
 formatum = ".png"
@@ -45,7 +46,7 @@ def vanOttBabu(x, y, vissza=True, delete=None):
         coord = coordVissza(coord)
     for i in range(len(obj_lista)):
 
-        if coord == obj_lista[i].helyed():
+        if coord == obj_lista[i].coord:
             if delete is not None:
                 return i
             return obj_lista[i]
@@ -58,7 +59,7 @@ def vanOttTabla(x, y, vissza=True):
         coord = coordVissza(coord)
     for i in range(len(boardLista)):
 
-        if coord == tuple(boardLista[i].helyed()):
+        if coord == tuple(boardLista[i].coord):
             return boardLista[i]
     return False
 
@@ -66,6 +67,15 @@ def vanOttTabla(x, y, vissza=True):
 class Babu(pygame.sprite.Sprite):
     szinek = ["feher", "fekete"]
     Ki_lephet = 0
+
+    def __init__(self, szine, coord):
+        super(Babu, self).__init__()
+        self.lepet = 0
+        self.szine = szine
+        self.coord = coord
+        self.hovaLephet_coord = list()
+        self.hovaUt_coord = list()
+        self.hanyadikLepes = 0
 
     @classmethod
     def valtas(cls):
@@ -75,33 +85,65 @@ class Babu(pygame.sprite.Sprite):
         else:
             cls.Ki_lephet = 1
 
-    def __init__(self, szine, coord):
-        super(Babu, self).__init__()
-        self.lepet = 0
-        self.szine = szine
-        self.coord = coord
-        self.hovaLephet_coord = list()
-        self.hovaUt_coord = list()
+    def lepesEllenorzo(self):
+        for i in range(len(self.hovaLephet)):
+            self.volt_coord = self.coord
+            for j in range(8):
+                adat = self.coordLepteto(i, self.volt_coord)
+                if adat is not True:
+                    break
+
+    def coordAdd(self, i, coord):
+        return tuple(map(lambda x, y: x + y, coord, self.hovaLephet[i]))
+
+    def coordLepteto(self, hanyadik, coord=None, hova=None, sanc=False):
+        if coord is None and hova is None and sanc == False:
+            adat = self.coordAdd(hanyadik, self.coord)
+
+        elif hova != None and sanc == False:
+            adat = tuple(map(lambda x, y: x + y, self.coord, hova[hanyadik]))
+
+        elif sanc == False:
+            adat = tuple(map(lambda x, y: x + y, coord, self.hovaLephet[hanyadik]))
+
+        elif sanc:
+            adat = tuple(map(lambda x, y: x + y, coord, self.hovaSanc[hanyadik]))
+
+        if hova is None:
+            hova = True
+
+        else:
+            hova = False
+        return self.hovaLephet_add(adat, hanyadik, hova)
+
+    def hovaLephet_add(self, mit, hanyadik, hova=True):
+        ottBabu = vanOttBabu(mit[0], mit[1], False)
+        if mit in coordinatak and mit not in self.hovaLephet_coord and ottBabu == False and hova and self.nev != "kiraly":
+            self.hovaLephet_coord.append(mit)
+            self.volt_coord = mit
+            return True
+        # elif hova is not True and ottBabu is not False:
+
+        elif ottBabu is not False:
+            if self.nev is not "gyalog":
+                if self.hovaLephet[hanyadik] in self.hovaUt and ottBabu.szined() is not self.szined():
+                    self.hovaLephet_coord.append(mit)
+
+            elif ottBabu.szine is not self.szine and hova is not True:
+                self.hovaLephet_coord.append(mit)
+
+            return False
+
+        if self.nev == "kiraly":  # and hanyadik <= 3:
+
+            self.hovaLephet_coord.append(mit)
+
+        else:
+            return False
 
     def delete_babu(self):
         obj_lista.remove(self)
         babu_csapat.remove(self)
-
-    @property
-    def lepesSzama(self):
-        return self.lepet
-
-    @property
-    def szine(self):
-        return self.szine
-
-    @property
-    def helyed(self):
-        return self.coord
-
-    @property
-    def Kivagy(self):
-        return self.nev
 
     def lephetRajzolo(self, valami=False):
         if self.lepet is 1 or valami:
@@ -110,7 +152,7 @@ class Babu(pygame.sprite.Sprite):
             self.lepet = 0
 
         elif self.lepet is 0:
-            self.lepesSzamolo()
+            self.lepesEllenorzo()
             for i in range(len(self.hovaLephet_coord)):
                 adat = Kor(self.hovaLephet_coord[i])
                 kor_lista.append(adat)
@@ -120,12 +162,43 @@ class Babu(pygame.sprite.Sprite):
     def kepBetolt(self):
         self.image = pygame.Surface((kocka_meret, kocka_meret))
         # nem teljse :( még kellenek a képek hogy be tudjam másolni)
-        print("121")
-        print(mappa)
-        self.image = pygame.image.load(mappa + self.kep_file)
+        self.image = pygame.image.load(os.path.join('kepek', self.kep_file))
         # töltse be a képet a meg felelő helyre
         self.rect = self.image.get_rect()
         self.set_position()
+
+    def set_position(self, x=None, y=None, sanc=False):
+        if x is not None and y is not None:
+            coord = coordSzamolo((x, y))
+            self.lepesEllenorzo()
+            # self.lephetRajzolo()
+            if (x, y) in self.hovaLephet_coord and self.szine == self.szinek[self.Ki_lephet]:
+                vanOtt = vanOttBabu(x, y, False)
+                Babu.valtas()
+                if vanOtt is not False:
+                    vanOtt.delete_babu()
+                self.rect.x = coord[0]
+                self.rect.y = coord[1]
+                self.coord = (x, y)
+                print(self.coord)
+                self.lepet += 1
+                if self.nev is "gyalog":
+                    self.lepesek()
+                elif self.nev == "kiraly":
+                    self.sancLepesek()
+                self.hanyadikLepes += 1
+                self.hovaLephet_coord = list()
+
+            elif sanc:
+                self.rect.x = coord[0]
+                self.rect.y = coord[1]
+                self.coord = (x, y)
+                self.lepet += 1
+
+        else:
+            self.coords = coordSzamolo(self.coord)
+            self.rect.x = self.coords[0]
+            self.rect.y = self.coords[1]
 
     def set_file_nev(self):
         self.kep_file = self.szine + "_" + self.nev + formatum
@@ -143,6 +216,20 @@ class Gyalog(Babu):
         else:
             self.hovaLephet = [(0, -1), (0, -2)]
             self.hovaUt = [(1, -1), (-1, -1)]
+
+    def lepesEllenorzo(self):
+        self.hovaLephet_coord.clear()
+        # k = 0
+
+        for i in range(len(self.hovaLephet)):  # int(len(self.hovaLephet)/8)
+            adat = self.coordLepteto(i)
+            if adat is not True and self.nev is "gyalog":
+                break
+
+        for i in range(len(self.hovaUt)):
+            # print(self.nev)
+            adat = self.coordLepteto(i, hova=self.hovaUt)
+        self.lepesek()
 
     def lepesek(self):  # egy ből pos nézzen és azzal dolgozon
         if self.hanyadikLepes == 0 and self.lepet is 1:
@@ -163,7 +250,10 @@ class Lo(Babu):
 class Bastja(Babu):
     def __init__(self, szine, coord):
         super().__init__(szine, coord)
+        # super(Babu, self).__init__()
         self.hovaLephet = [(0, 1), (0, -1), (-1, 0), (1, 0)]
+        # self.hovaLephet_kitolt()
+        # print(self.hovaLephet, "lista")
         self.hovaUt = self.hovaLephet
         self.nev = "bastja"
         self.set_file_nev()
@@ -187,6 +277,18 @@ class Kiraly(Babu):  # TODO: oldara lépés nem müködik
         self.nev = "kiraly"
         self.sanc = False
         self.set_file_nev()
+
+    def hovaLephet_add(self, mit, hanyadik, hova=True):
+        ottBabu = vanOttBabu(mit[0], mit[1], False)
+        if ottBabu is not False:
+            if self.hovaLephet[hanyadik] in self.hovaUt and ottBabu.szine != self.szine:  # if self.nev == "kiraly":  # and hanyadik <= 3:
+                self.hovaLephet_coord.append(mit)
+
+        elif hanyadik <= 8:
+            self.hovaLephet_coord.append(mit)
+            self.volt_coord = mit
+        else:
+            return False
 
     def lepesek(self):  # Todo: csak akor lehessen ketött lépni ha a bástja felé lép ( lehet hogy nem müködik amásik irányba mert öda hármat kell lépni)
         if self.hanyadikLepes == 0 and self.lepet == 0:
@@ -251,11 +353,9 @@ class Tabla(pygame.sprite.Sprite):
     def kitolt(self):
         self.image.fill(self.szine)
 
-    @property
     def szined(self):
         return self.szine
 
-    @property
     def helyed(self):
         return self.coord
 
@@ -291,11 +391,9 @@ class Kor(pygame.sprite.Sprite):
         self.image.fill(self.szine)
     # self.image.convert()
 
-    @property
     def szined(self):
         return self.szine
 
-    @property
     def helyed(self):
         return self.coord
 
@@ -351,7 +449,7 @@ BLACK = (78, 60, 7)
 szin = (WHITE, BLACK)
 
 screen = pygame.display.set_mode((meret, meret), pygame.RESIZABLE)
-pygame.display.set_caption('Sakk')
+pygame.display.set_caption('Sakk 2')
 clock = pygame.time.Clock()
 JatekVege = False
 babu_csapat = pygame.sprite.Group()
