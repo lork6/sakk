@@ -12,16 +12,31 @@ formatum = ".png"
 
 def lepesek_lista_Csinalasa():
     global fekete_lepesek_lista, feher_lepesek_lista
+    try:
+        lista += feher_lepesek_lista
+    except:
+        pass
     fekete_lepesek_lista = list()
     feher_lepesek_lista = list()
     for babu in obj_lista:
         babu.lepesEllenorzo()
         if babu.szine == "feher":
-            feher_lepesek_lista.append(babu.hovaLephet_coord)
+            feher_lepesek_lista += babu.hovaLephet_coord
         else:
-            fekete_lepesek_lista.append(babu.hovaLephet_coord)
-    print(fekete_lepesek_lista)
-    print(feher_lepesek_lista)
+            fekete_lepesek_lista += babu.hovaLephet_coord
+    try:
+        print(lista == feher_lepesek_listab)
+    except:
+        pass
+    #print(fekete_lepesek_lista)
+    #print(feher_lepesek_lista)
+
+def kiraly_lephet_sakk(hova, kiraly_szine):
+    if kiraly_szine == "feher":
+        return not hova in fekete_lepesek_lista
+    else:
+        return not hova in feher_lepesek_lista
+    # azaz léphet oda a király töbi esetben meg nem
 
 def coordSzamolo(coord):
     # itt vissza adja azt a pontos coord-inátát amint a gép nek kell hogy kit tudja írni
@@ -187,19 +202,23 @@ class Babu(pygame.sprite.Sprite):
                 self.rect.y = coord[1]
                 self.coord = (x, y)
                 print(self.coord)
+                lepesek_lista_Csinalasa()
                 self.lepet += 1
                 if self.nev is "gyalog":
                     self.lepesek()
                 elif self.nev == "kiraly":
                     self.sancLepesek()
                 self.hanyadikLepes += 1
+                
                 self.hovaLephet_coord = list()
+                
 
             elif sanc:
                 self.rect.x = coord[0]
                 self.rect.y = coord[1]
                 self.coord = (x, y)
                 self.lepet += 1
+                lepesek_lista_Csinalasa()
 
         else:
             self.coords = coordSzamolo(self.coord)
@@ -292,11 +311,12 @@ class Kiraly(Babu):  # TODO: oldara lépés nem müködik
 
     def hovaLephet_add(self, mit, hanyadik, hova=True):
         ottBabu = vanOttBabu(mit[0], mit[1], False)
-        if ottBabu is not False:
+        ottSakk = kiraly_lephet_sakk(mit, self.szine)
+        if ottBabu is not False and ottSakk:
             if self.hovaLephet[hanyadik] in self.hovaUt and ottBabu.szine != self.szine:  # if self.nev == "kiraly":  # and hanyadik <= 3:
                 self.hovaLephet_coord.append(mit)
 
-        elif hanyadik <= 8:
+        elif hanyadik <= 8 and ottSakk:
             self.hovaLephet_coord.append(mit)
             self.volt_coord = mit
         else:
@@ -452,7 +472,7 @@ for i in range(len(tabla_erendez)):
             babu = Gyalog(szinek[j], coordinatak[i])
         obj_lista.append(babu)
 
-lepesek_lista_Csinalasa
+lepesek_lista_Csinalasa()
 
 pygame.init()
 
