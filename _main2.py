@@ -4,12 +4,24 @@ import pygame
 import os
 import sys
 
-
+print (sys.version + "sdfa")
 kocka_meret = 100
 per = r"\ "
 mappa = os.path.dirname(__file__) + r"{}kepek{}".format(per[0], per[0])
 formatum = ".png"
 
+def lepesek_lista_Csinalasa():
+    global fekete_lepesek_lista, feher_lepesek_lista
+    fekete_lepesek_lista = list()
+    feher_lepesek_lista = list()
+    for babu in obj_lista:
+        babu.lepesEllenorzo()
+        if babu.szine == "feher":
+            feher_lepesek_lista.append(babu.hovaLephet_coord)
+        else:
+            fekete_lepesek_lista.append(babu.hovaLephet_coord)
+    print(fekete_lepesek_lista)
+    print(feher_lepesek_lista)
 
 def coordSzamolo(coord):
     # itt vissza adja azt a pontos coord-inátát amint a gép nek kell hogy kit tudja írni
@@ -127,19 +139,12 @@ class Babu(pygame.sprite.Sprite):
 
         elif ottBabu is not False:
             if self.nev is not "gyalog":
-                if self.hovaLephet[hanyadik] in self.hovaUt and ottBabu.szined() is not self.szined():
+                if self.hovaLephet[hanyadik] in self.hovaUt and ottBabu.szine is not self.szine:
                     self.hovaLephet_coord.append(mit)
 
             elif ottBabu.szine is not self.szine and hova is not True:
                 self.hovaLephet_coord.append(mit)
 
-            return False
-
-        if self.nev == "kiraly":  # and hanyadik <= 3:
-
-            self.hovaLephet_coord.append(mit)
-
-        else:
             return False
 
     def delete_babu(self):
@@ -247,6 +252,12 @@ class Lo(Babu):
         self.nev = "lo"
         self.set_file_nev()
 
+    def lepesEllenorzo(self):
+        self.hovaLephet_coord.clear()
+        for i in range(len(self.hovaLephet)):
+            adat = self.coordLepteto(i)
+            if adat != True and self.nev is "gyalog": # kitalálni mért kell az id hogy ha gyalog a neve akkor break eljen?
+                break
 
 class Bastja(Babu):
     def __init__(self, szine, coord):
@@ -441,6 +452,7 @@ for i in range(len(tabla_erendez)):
             babu = Gyalog(szinek[j], coordinatak[i])
         obj_lista.append(babu)
 
+lepesek_lista_Csinalasa
 
 pygame.init()
 
