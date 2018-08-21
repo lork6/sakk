@@ -1,4 +1,5 @@
 #!/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# coding=utf-8
 import pygame
 import os
 import sys
@@ -206,7 +207,7 @@ class Babu(pygame.sprite.Sprite):
 
 class Gyalog(Babu):
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Gyalog, self).__init__(szine, coord)
         self.nev = "gyalog"
         self.set_file_nev()
 
@@ -239,7 +240,7 @@ class Gyalog(Babu):
 
 class Lo(Babu):
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Lo, self).__init__(szine, coord)
         # super(Babu, self).__init__()
         self.hovaLephet = [(1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (-2, 1), (2, -1), (-2, -1)]
         self.hovaUt = self.hovaLephet
@@ -249,7 +250,7 @@ class Lo(Babu):
 
 class Bastja(Babu):
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Bastja, self).__init__(szine, coord)
         # super(Babu, self).__init__()
         self.hovaLephet = [(0, 1), (0, -1), (-1, 0), (1, 0)]
         # self.hovaLephet_kitolt()
@@ -261,7 +262,7 @@ class Bastja(Babu):
 
 class Futo(Babu):
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Futo, self).__init__(szine, coord)
         self.hovaLephet = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
         self.hovaUt = self.hovaLephet
         self.nev = "futo"
@@ -270,7 +271,7 @@ class Futo(Babu):
 
 class Kiraly(Babu):  # TODO: oldara lépés nem müködik
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Kiraly, self).__init__(szine, coord)
         self.hovaLephet = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
         self.hovaSanc = [(1, 0), (2, 0), (-1, 0), (-2, 0), (3, 0), (4, 0), (-3, 0)]
         self.hovaUt = self.hovaLephet
@@ -326,7 +327,7 @@ class Kiraly(Babu):  # TODO: oldara lépés nem müködik
 
 class Kiralyno(Babu):
     def __init__(self, szine, coord):
-        super().__init__(szine, coord)
+        super(Kiralyno, self).__init__(szine, coord)
         self.nev = "kiralyno"
         self.hovaLephet = [(0, 1), (1, 0), (0, -1), (-1, 0),
                            (1, 1), (-1, -1), (1, -1), (-1, 1)]
@@ -420,7 +421,7 @@ szinek = ["fekete", "feher"]
 obj_lista = list()
 # print(coordinatak)
 j = 0
-babuk = ["Bastja", "Lo", "Futo", "Kiralyn", "Kiraly", "Gyalog"]
+babuk = ["Bastja", "Lo", "Futo", "Kiralyno", "Kiraly", "Gyalog"]
 for i in range(len(tabla_erendez)):
     tabla_id = tabla_erendez[i] - 1
     if i > 18:
